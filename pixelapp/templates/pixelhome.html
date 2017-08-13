@@ -1,0 +1,53 @@
+
+
+
+<form class="form-horizontal container-fluid" action="/" method="POST">
+    {% csrf_token %}
+	{%if err%}
+	<div class="row">
+        <div class=" col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <label>Error:</label>
+                <p>{{err}}</p>
+                    
+            </div>
+        </div>
+    </div>
+	{% endif %}
+	{%if token%}
+	<div class="row">
+        <div class=" col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <label>Token:</label>
+                <p>{{token}}</p>
+            </div>
+        </div>
+    </div>
+	{% endif %}
+    <div class="row">
+        <div class=" col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <label>Username:</label>
+                <p><input type="text" class="form-control" name="nickname"></p>
+                    
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class=" col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <label>Project:</label>
+                <p>
+                <select name="project">
+                  {% for p in project %}
+				  <option value ="{{p}}">{{p}}</option>
+				  {% endfor %}
+				</select>
+				</p>
+                    
+            </div>
+        </div>
+    </div>
+    
+    <center><button type="submit" class="btn btn-primary">Submit</button></center>
+</form>
