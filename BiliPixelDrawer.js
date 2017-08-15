@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name         BiliPixelDrawer
 // @namespace    
-// @version      1.2
+// @version      1.3
 // @description  BiliPixelDrawer Client(Script)
 // @author       Bluefissure
 // @match        live.bilibili.com/pages/1702/pixel-drawing
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
-var version = "v1.2";
+var version = "v1.3";
 var style_btn = 'float:right;background:rgba(228,228,228,0.4); cursor:pointer; margin:0px 1px 0px 0px; padding:0px 3px;color:black; border:2px ridge black;border:2px groove black;';
 var style_win_top = 'z-index:998; padding:6px 10px 8px 15px;background-color:lightGrey;position:fixed;left:5px;top:100px;border:1px solid grey; ';
 var style_win_buttom = 'z-index:998; padding:6px 10px 8px 15px;background-color:lightGrey;position:fixed;right:5px;bottom:5px;border:1px solid grey;  ';
+var STATUS_HOST="http://api.live.bilibili.com/activity/v1/SummerDraw/status";
+var DRAW_HOST="http://api.live.bilibili.com/activity/v1/SummerDraw/draw";
 
 var timer;
 var res_time;
@@ -41,39 +43,25 @@ function finishpixel(x,y,color){
     });
 }
 function drawpixel(x,y,color){
-    var formData = new FormData();
+    $.ajax(DRAW_HOST,
+           { type:"post", dataType:"json", xhrFields:{ withCredentials: true },
+            data:{
+                x_min:x,
+                y_min:y,
+                x_max:x,
+                y_max:y,
+                color:color
+            },success:function(res){
+                console.log(res);
+                if(res.msg=="success"){
+                    console.log("Draw at ("+x+","+y+") color:"+color+" success");
+                    info.innerHTML="Draw at ("+x+","+y+") color:"+color+" success";
+                    finishpixel(x,y,color);
+                }else{
+                    info.innerHTML="Error:"+res.msg;
+                }
+            }});
 
-    formData.append("x_min", x);
-    formData.append("y_min", y);
-    formData.append("x_max", x);
-    formData.append("y_max", y);
-    formData.append("color", color);
-    GM_xmlhttpRequest({
-        method: "POST",
-        url: "http://api.live.bilibili.com/activity/v1/SummerDraw/draw",
-        data: formData,
-        headers: {
-            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-            'referer': 'https://account.bilibili.com/site/record.html',
-            'Cookie': document.cookie
-        },
-        onload: function(response) {
-            var res;
-            try{
-                res=JSON.parse(response.responseText);
-            }catch(e){
-                info.innerHTML="Error:"+e.message;
-                return;
-            }
-            if(res.msg=="success"){
-                console.log("Draw at ("+x+","+y+") color:"+color+" success");
-                info.innerHTML="Draw at ("+x+","+y+") color:"+color+" success";
-                finishpixel(x,y,color);
-            }else{
-            info.innerHTML="Error:"+res.msg;
-            }
-        }
-    });
 }
 function getpixel(x,y,color){
     GM_xmlhttpRequest({
@@ -119,40 +107,36 @@ function getpixel(x,y,color){
             }
         }
     });
+
 }
 function draw() {
     var x=0,y=0,color=0;
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: "http://api.live.bilibili.com/activity/v1/SummerDraw/status",
-        headers: {
-            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36",
-            'referer': 'https://account.bilibili.com/site/record.html',
-            'Cookie': document.cookie
-        },
-        onload: function(response) {
-            var res=JSON.parse(response.responseText);
-            res_time = res.data.time;
-            if(res.msg!="success"){
-                console.log(res);
-                info.innerHTML="Error:"+res.msg;
-            }else{
-                console.log("left time:"+res_time);
-                info.innerHTML="Time left:"+res_time;
-            }
-            if(res_time==0){
-                getpixel(x,y,color);
-            }
-        }
-    });
-
-
+    $.ajax(STATUS_HOST,
+           { type:"get", xhrFields:{ withCredentials: true },
+            success:function(res){
+                //console.log(res);
+                res_time = res.data.time;
+                if(res.msg!="success"){
+                    console.log(res);
+                    info.innerHTML="Error:"+res.msg;
+                }else{
+                    console.log("left time:"+res_time);
+                    info.innerHTML="Time left:"+res_time;
+                }
+                if(res_time==0){
+                    getpixel(x,y,color);
+                }
+            }});
 }
 (function() {
     'use strict';
     // Your code here...
     if(window.location.href=="http://live.bilibili.com/pages/1702/pixel-drawing"||
        window.location.href=="https://live.bilibili.com/pages/1702/pixel-drawing"){
+        if(window.location.href=="https://live.bilibili.com/pages/1702/pixel-drawing"){
+            STATUS_HOST="https://api.live.bilibili.com/activity/v1/SummerDraw/status";
+            DRAW_HOST="https://api.live.bilibili.com/activity/v1/SummerDraw/draw";
+        }
         var newDiv = document.createElement("div");
         newDiv.id = "controlWindow";
         newDiv.align = "left";
