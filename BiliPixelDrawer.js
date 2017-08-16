@@ -1,20 +1,20 @@
 // ==UserScript==
 // @name         BiliPixelDrawer
 // @namespace    
-// @version      1.3
+// @version      1.4
 // @description  BiliPixelDrawer Client(Script)
 // @author       Bluefissure
 // @match        live.bilibili.com/pages/1702/pixel-drawing
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
-var version = "v1.3";
+var version = "v1.4";
 var style_btn = 'float:right;background:rgba(228,228,228,0.4); cursor:pointer; margin:0px 1px 0px 0px; padding:0px 3px;color:black; border:2px ridge black;border:2px groove black;';
 var style_win_top = 'z-index:998; padding:6px 10px 8px 15px;background-color:lightGrey;position:fixed;left:5px;top:100px;border:1px solid grey; ';
 var style_win_buttom = 'z-index:998; padding:6px 10px 8px 15px;background-color:lightGrey;position:fixed;right:5px;bottom:5px;border:1px solid grey;  ';
 var STATUS_HOST="http://api.live.bilibili.com/activity/v1/SummerDraw/status";
 var DRAW_HOST="http://api.live.bilibili.com/activity/v1/SummerDraw/draw";
-
+var UPDATE_URL="https://greasyfork.org/zh-CN/scripts/32245-bilipixeldrawer";
 var timer;
 var res_time;
 var host;
@@ -23,6 +23,7 @@ var total;
 var solve;
 var info;
 var control;
+var projname;
 function finishpixel(x,y,color){
     GM_xmlhttpRequest({
         method: "GET",
@@ -91,6 +92,7 @@ function getpixel(x,y,color){
                 var solve_cnt=res.total-res.unsolve;
                 total.innerHTML="Total pixel(s):"+res.total;
                 solve.innerHTML="Drawed pixel(s):"+solve_cnt;
+                projname.innerHTML="Project "+res.projname;
                 drawpixel(x,y,color);
             }else if(res.msg=="finish"){
                 console.log("Project finish.");
@@ -98,6 +100,7 @@ function getpixel(x,y,color){
                 var solve_cnt=res.total-res.unsolve;
                 total.innerHTML="Total pixel(s):"+res.total;
                 solve.innerHTML="Drawed pixel(s):"+solve_cnt;
+                projname.innerHTML="Project "+res.projname;
                 console.log("Stop Auto Drawing");
                 clearInterval(timer);
                 control.innerHTML = "开始脚本";
@@ -172,6 +175,8 @@ function draw() {
         td.appendChild(document.createElement("p"));
         total=document.createElement("p");
         solve=document.createElement("p");
+        projname=document.createElement("p");
+        td.appendChild(projname);
         td.appendChild(total);
         td.appendChild(solve);
         info = document.createElement("span");
@@ -180,6 +185,8 @@ function draw() {
         GM_addStyle("#info{color:red;font-size: 8pt;}");
         td.appendChild(info);
         td.appendChild(document.createElement("p"));
+       
+
 
         control = document.createElement("span");
         control.id = "control";
@@ -201,6 +208,14 @@ function draw() {
         }, false);
         td.appendChild(control);
         GM_addStyle("#control{" + style_btn + "}");
+        
+         var upd = document.createElement("span");
+        upd.id = "upd";
+        upd.innerHTML = "<a href=\""+UPDATE_URL+"\" target=\"_blank\">Update</a>";
+        GM_addStyle("#upd{color:red;font-size: 8pt;}");
+        td.appendChild(upd);
+        td.appendChild(document.createElement("p"));
+
 
 
     }
