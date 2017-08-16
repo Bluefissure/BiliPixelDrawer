@@ -31,21 +31,21 @@ def pixelhome(req):
         if not nickname:
             dict.update({'err':"Empty username."})
         elif not projname:
-        	dict.update({'err':"Empty project."})
+            dict.update({'err':"Empty project."})
         else:
             print(nickname)
             print(projname)
             user = User.objects.filter(id=nickname)
             if(len(user) == 0):
-            	user = User()
-            	user.id = nickname
+                user = User()
+                user.id = nickname
                 user.save()
             else:
                 user = user[0]
             project = Project.objects.filter(name=projname)
             if(len(project) == 0):
-            	project = Project()
-            	project.name = projname
+                project = Project()
+                project.name = projname
                 project.save()
             else:
                 project = project[0]
@@ -80,15 +80,15 @@ def pixelhome(req):
                     pix = proj.pixel.filter(x=x,y=y)[0]
                     pix.finuser = user
                     pix.save()
-                    jsondata={"msg":"success"}
+                    jsondata={"msg":"success","projname":proj.name}
                     return JsonResponse(jsondata)
                 else:
                     pixel = tt.project.pixel.filter(finuser="Anonymous").order_by("updtime")
                     tot = tt.project.pixel.all().count()
                     unsolved = tt.project.pixel.filter(finuser="Anonymous").count()
-                    #print(pixel)
+                    proj = tt.project
                     if unsolved>0:
-                        pixel = pixel[random.randint(0,min(unsolved-1,50))]
+                        pixel = pixel[random.randint(0,unsolved-1)]
                         jsondata={
                             'total':tot,
                             'unsolve':unsolved,
@@ -96,12 +96,14 @@ def pixelhome(req):
                             'x':pixel.x,
                             'y':pixel.y,
                             'color':pixel.color if pixel.color<10 else chr(pixel.color-10+ord('A')),
+                            "projname":proj.name,
                         }
                     else:
                         jsondata={
                             'total':tot,
                             'unsolve':unsolved,
                             'msg':"finish",
+                            "projname":proj.name,
                         }
                     return JsonResponse(jsondata)
     projs = Project.objects.all()
